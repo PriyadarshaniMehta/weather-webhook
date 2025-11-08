@@ -5,7 +5,7 @@ import openai
 
 app = Flask(__name__)
 
-# OLD OpenAI SDK
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
@@ -19,7 +19,7 @@ def home():
 def assistant():
     data = request.get_json()
 
-    # Watson sends user text in input.text
+    # Watson input format
     user_message = (
         data.get("input", {}).get("text", "") or
         data.get("message", "")
@@ -34,6 +34,7 @@ def assistant():
             f"https://api.open-meteo.com/v1/forecast?"
             f"latitude={latitude}&longitude={longitude}&current_weather=true"
         )
+
         weather_data = requests.get(url).json()
         current = weather_data.get("current_weather", {})
 
@@ -44,7 +45,7 @@ def assistant():
 
         return jsonify({"output": {"text": [reply]}})
 
-    # GENERAL AI RESPONSE
+    # GENERAL USING OPENAI
     if OPENAI_API_KEY:
         try:
             response = openai.ChatCompletion.create(
@@ -58,7 +59,7 @@ def assistant():
             return jsonify({"output": {"text": [reply]}})
 
         except Exception as e:
-            return jsonify({"output": {"text": [f\"OpenAI error: {e}\"]}})
+            return jsonify({"output": {"text": [f"OpenAI error: {e}"]}})
 
     # FALLBACK
     return jsonify({"output": {"text": ["I'm here to help!"]}})
