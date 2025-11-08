@@ -18,14 +18,21 @@ def home():
 def assistant():
     data = request.get_json()
 
-    # Watson input format
+    # DEBUG
+    print("DEBUG Incoming:", data)
+
+    # Extract user text (ONLY present in some cases)
     user_message = (
         data.get("input", {}).get("text", "") or
         data.get("message", "")
     ).lower()
 
-    # ✅ WEATHER HANDLER (stop here)
-    if "weather" in user_message:
+    # Extract intents that Watson sends
+    intents = data.get("intents", [])
+    intent_names = [i.get("intent") for i in intents]
+
+    # WEATHER HANDLER (use intent + text)
+    if "get_weather" in intent_names or "weather" in user_message:
         latitude = 28.625
         longitude = 77.25
 
@@ -44,7 +51,7 @@ def assistant():
 
         return jsonify({"output": {"text": [reply]}})
 
-    # ✅ OPENAI HANDLER — only if weather was NOT matched
+    # OPENAI HANDLER — only if not weather
     elif OPENAI_API_KEY:
         try:
             response = openai.ChatCompletion.create(
@@ -66,4 +73,5 @@ def assistant():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
