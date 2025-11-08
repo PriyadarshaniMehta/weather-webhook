@@ -1,13 +1,13 @@
 import requests
 from flask import Flask, request, jsonify
 import os
-from openai import OpenAI
+import openai
 
 app = Flask(__name__)
 
-# Read OpenAI API key from environment on render
+# Load API key for OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+openai.api_key = OPENAI_API_KEY
 
 @app.route("/", methods=["GET"])
 def home():
@@ -19,7 +19,7 @@ def assistant():
     data = request.get_json()
     user_message = data.get("message", "").lower()
 
-    #  WEATHER HANDLER : you can modify the latitude and logitude according to your location
+    # WEATHER HANDLER
     if "weather" in user_message:
         latitude = float(data.get("latitude", 28.625))
         longitude = float(data.get("longitude", 77.25))
@@ -35,22 +35,22 @@ def assistant():
         )
         return jsonify({"response": reply})
 
-    # GENERAL QUESTION HANDLER USING OPENAI GPT 
+    #  GENERAL QUESTION HANDLER USING OPENAI
     if OPENAI_API_KEY:
         try:
-            completion = client.chat.completions.create(
-                model="gpt-4o-mini",
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a helpful personal AI assistant."},
                     {"role": "user", "content": user_message}
                 ]
             )
-            reply = completion.choices[0].message["content"]
+            reply = response["choices"][0]["message"]["content"]
             return jsonify({"response": reply})
         except Exception as e:
             return jsonify({"response": f"Error from OpenAI: {str(e)}"})
 
-    # ---------- FALLBACK ----------
+    # FALLBACK
     return jsonify({"response": "I'm your assistant! I can answer weather and general questions."})
 
 
@@ -69,4 +69,5 @@ def weather_only():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
 
