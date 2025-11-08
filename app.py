@@ -5,7 +5,6 @@ import openai
 
 app = Flask(__name__)
 
-
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
@@ -25,7 +24,7 @@ def assistant():
         data.get("message", "")
     ).lower()
 
-    # WEATHER HANDLER
+    # ✅ WEATHER HANDLER (stop here)
     if "weather" in user_message:
         latitude = 28.625
         longitude = 77.25
@@ -45,8 +44,8 @@ def assistant():
 
         return jsonify({"output": {"text": [reply]}})
 
-    # GENERAL USING OPENAI
-    if OPENAI_API_KEY:
+    # ✅ OPENAI HANDLER — only if weather was NOT matched
+    elif OPENAI_API_KEY:
         try:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -67,3 +66,4 @@ def assistant():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
